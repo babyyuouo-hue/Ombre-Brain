@@ -1939,9 +1939,9 @@
     .tab-spacer { display: none; }
   }
 </style>
-<link rel="stylesheet" href="/static/universe.css">
+<link rel="stylesheet" href="/static/universe.css?v=xiaoyu-2">
 </head>
-<body>
+<body data-universe-tab="home">
 
 <!-- SVG icon sprite — all icons referenced via <use href="#i-*"> -->
 <svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true">
@@ -1966,6 +1966,7 @@
 </svg>
 
 <div class="header">
+  <span class="universe-date-kicker" id="universe-date-kicker">FRIDAY · AUGUST 21</span>
   <h1>
     <img class="ob-logo" src="/static/icon.svg" alt="OB" />
     <span id="universe-greeting">晚上好，小宇。</span><span class="version-badge" id="version-badge"></span>
@@ -1992,9 +1993,14 @@
     <button onclick="doSearch()" title="搜索"><i data-lucide="search"></i></button>
   </div>
   <div class="header-actions">
-    <button id="btn-restart" onclick="restartService()" title="重启服务；红点表示有设置等待重启生效" style="height:32px;padding:0 12px;gap:5px;display:inline-flex;align-items:center;white-space:nowrap;font-size:12px;"><span class="restart-dot"></span><i data-lucide="power"></i> 重启</button>
-    <button onclick="openFeedback()" title="给作者反馈 / Feedback" style="height:32px;padding:0 12px;gap:5px;display:inline-flex;align-items:center;white-space:nowrap;font-size:12px;"><i data-lucide="message-circle"></i> 反馈 Feedback</button>
-    <button onclick="doLogout()" title="退出登录 / Log out" style="height:32px;padding:0 12px;gap:5px;display:inline-flex;align-items:center;white-space:nowrap;font-size:12px;"><i data-lucide="log-out"></i> 退出 Exit</button>
+    <button class="universe-drift-button" onclick="universeNextMemory()">漂向下一颗星 <span aria-hidden="true">↗</span></button>
+    <button class="universe-avatar" onclick="toggleUniverseAccount(event)" aria-label="打开个人空间">宇</button>
+    <div class="universe-account-menu" id="universe-account-menu">
+      <button onclick="universeGo('settings');toggleUniverseAccount()"><i data-lucide="settings"></i>设置</button>
+      <button id="btn-restart" onclick="restartService()" title="重启服务；红点表示有设置等待重启生效"><span class="restart-dot"></span><i data-lucide="power"></i>重启服务</button>
+      <button onclick="openFeedback()"><i data-lucide="message-circle"></i>反馈</button>
+      <button onclick="doLogout()"><i data-lucide="log-out"></i>退出</button>
+    </div>
   </div>
 </div>
 
@@ -2009,11 +2015,12 @@
   <div class="tab" data-tab="breath" data-index="04"><span>呼吸</span><span class="tab-en">Breath</span></div>
   <div class="tab" data-tab="letters" data-index="05"><span>信件</span><span class="tab-en">Letters</span></div>
   <div class="tab" data-tab="plan" data-index="06"><span>约定</span><span class="tab-en">Promises</span></div>
-  <div class="tab" data-tab="anchors" data-index="07"><span>锚点</span><span class="tab-en">Anchors</span></div>
-  <div class="tab" data-tab="settings" data-index="08"><span>设置</span><span class="tab-en">Settings</span></div>
-  <div class="tab" data-tab="import" data-index="09"><span>导入</span><span class="tab-en">Import</span></div>
-  <div class="tab" data-tab="logs" data-index="10"><span>日志</span><span class="tab-en">Logs</span></div>
-  <div class="tab" data-tab="faq" data-index="11"><span>帮助</span><span class="tab-en">FAQ</span></div>
+  <button class="universe-tools-toggle" id="universe-tools-toggle" onclick="toggleUniverseTools()"><span>更多工具</span><b aria-hidden="true">＋</b></button>
+  <div class="tab universe-tool-tab" data-tab="anchors" data-index="07"><span>锚点</span><span class="tab-en">Anchors</span></div>
+  <div class="tab universe-tool-tab" data-tab="settings" data-index="08"><span>设置</span><span class="tab-en">Settings</span></div>
+  <div class="tab universe-tool-tab" data-tab="import" data-index="09"><span>导入</span><span class="tab-en">Import</span></div>
+  <div class="tab universe-tool-tab" data-tab="logs" data-index="10"><span>日志</span><span class="tab-en">Logs</span></div>
+  <div class="tab universe-tool-tab" data-tab="faq" data-index="11"><span>帮助</span><span class="tab-en">FAQ</span></div>
   <!-- v3-debug tab 暂时隐藏：后端 /api/v3/debug/* 路由已就位（只读、不写数据），
        但 v3_runtime 尚未接入（src/ombrebrain/ 架构核心未挂载到 server.py），
        现在打开只会看到空列表，不报错但没数据。
@@ -2021,7 +2028,10 @@
   <div class="tab" data-tab="v3-debug"><span>2.4.0 Debug</span><span class="tab-en">Replay</span></div>
   -->
   <div class="tab-spacer"></div>
-  <div class="tab" data-tab="about" data-index="12"><span>关于</span><span class="tab-en">About</span></div>
+  <div class="tab universe-tool-tab" data-tab="about" data-index="12"><span>关于</span><span class="tab-en">About</span></div>
+  <div class="universe-rail-status">
+    <span></span><div><b>记忆安好</b><small id="universe-rail-count">traces · now</small></div>
+  </div>
 </div>
 
 <!-- embed-warn-banner: 向量化未配置时始终可见，配置后自动消失 -->
@@ -4750,6 +4760,11 @@ function activateDashboardTab(tab) {
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
     tab.classList.add('active');
     const target = tab.dataset.tab;
+    document.body.dataset.universeTab = target;
+    if (tab.classList.contains('universe-tool-tab')) {
+      document.querySelector('.tabs')?.classList.add('tools-open');
+    }
+    if (typeof updateUniverseChrome === 'function') updateUniverseChrome(target);
     const pending = [];
     document.getElementById('home-view').style.display = target === 'home' ? '' : 'none';
     document.getElementById('list-view').style.display = target === 'list' ? '' : 'none';
@@ -10100,7 +10115,7 @@ async function initSelfFab() {
 }
 </script>
 
-<script src="/static/universe.js"></script>
+<script src="/static/universe.js?v=xiaoyu-2"></script>
 
 </body>
 </html>

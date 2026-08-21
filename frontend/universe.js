@@ -3,6 +3,7 @@
 
   var universeBuckets = [];
   var selectedBucketId = '';
+  var activeHumanName = '小宇';
   var starPositions = [
     [18, 22], [43, 16], [72, 27], [84, 52], [61, 61],
     [29, 57], [12, 72], [47, 76], [77, 78], [91, 30],
@@ -39,6 +40,56 @@
     var greeting = hour < 5 ? '夜深了' : hour < 11 ? '早上好' : hour < 14 ? '中午好' : hour < 18 ? '下午好' : '晚上好';
     return greeting + '，' + (name || '小宇') + '。';
   }
+
+  function englishDate() {
+    return new Intl.DateTimeFormat('en-US', {
+      weekday: 'long', month: 'long', day: 'numeric'
+    }).format(new Date()).toUpperCase();
+  }
+
+  var chromeTitles = {
+    list: '记忆。', network: '星空。', breath: '呼吸。', letters: '信件。',
+    plan: '约定。', anchors: '锚点。', settings: '设置。', import: '导入。',
+    logs: '日志。', faq: '帮助。', about: '关于。'
+  };
+
+  window.updateUniverseChrome = function (target) {
+    setText('universe-date-kicker', englishDate());
+    if (target === 'home') {
+      setText('universe-greeting', currentHourGreeting(activeHumanName));
+    } else if (chromeTitles[target]) {
+      setText('universe-greeting', chromeTitles[target]);
+    }
+    var menu = document.getElementById('universe-account-menu');
+    if (menu) menu.classList.remove('open');
+  };
+
+  window.toggleUniverseTools = function () {
+    var rail = document.querySelector('.tabs');
+    var button = document.getElementById('universe-tools-toggle');
+    if (!rail) return;
+    rail.classList.toggle('tools-open');
+    if (button) {
+      button.setAttribute('aria-expanded', rail.classList.contains('tools-open') ? 'true' : 'false');
+      var glyph = button.querySelector('b');
+      if (glyph) glyph.textContent = rail.classList.contains('tools-open') ? '−' : '＋';
+    }
+  };
+
+  window.toggleUniverseAccount = function (event) {
+    if (event && typeof event.stopPropagation === 'function') event.stopPropagation();
+    var menu = document.getElementById('universe-account-menu');
+    if (menu) menu.classList.toggle('open');
+  };
+
+  window.universeNextMemory = function () {
+    var home = document.querySelector('.tab[data-tab="home"]');
+    if (home && !home.classList.contains('active')) home.click();
+    if (!universeBuckets.length) return;
+    var index = universeBuckets.findIndex(function (bucket) { return bucket.id === selectedBucketId; });
+    var next = universeBuckets[(index + 1 + universeBuckets.length) % universeBuckets.length];
+    window.selectUniverseMemory(next.id);
+  };
 
   function setText(id, text) {
     var node = document.getElementById(id);
@@ -162,7 +213,8 @@
       if (!selectedBucketId || !universeBuckets.some(function (bucket) { return bucket.id === selectedBucketId; })) {
         selectedBucketId = universeBuckets.length ? universeBuckets[0].id : '';
       }
-      setText('universe-greeting', currentHourGreeting(humanData.human === '人类' ? '小宇' : humanData.human));
+      activeHumanName = humanData.human === '人类' ? '小宇' : (humanData.human || '小宇');
+      setText('universe-greeting', currentHourGreeting(activeHumanName));
       setText('universe-memory-count', String(buckets.filter(function (b) { return !b.dont_surface; }).length).padStart(2, '0'));
       setText('universe-pin-count', String(buckets.filter(function (b) { return b.pinned; }).length).padStart(2, '0'));
       setText('universe-letter-count', String((letterData.letters || []).length).padStart(2, '0'));
@@ -181,6 +233,7 @@
     renderDust();
     setText('universe-greeting', currentHourGreeting('小宇'));
     var day = new Date();
+    setText('universe-date-kicker', englishDate());
     setText('universe-day-number', String(day.getDate()).padStart(2, '0'));
     setText('universe-date-line', new Intl.DateTimeFormat('en-US', {weekday:'long', month:'long', day:'numeric'}).format(day).toUpperCase());
     // checkAuth() starts earlier in the legacy inline script. On a warm cache it
@@ -196,5 +249,11 @@
         return null;
       })
       .catch(function () { /* Existing auth overlay owns connection errors. */ });
+
+    document.addEventListener('click', function (event) {
+      var menu = document.getElementById('universe-account-menu');
+      var avatar = document.querySelector('.universe-avatar');
+      if (menu && !menu.contains(event.target) && event.target !== avatar) menu.classList.remove('open');
+    });
   });
 })();
