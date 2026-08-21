@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#17171a">
+  <meta name="description" content="小宇的 Ombre Brain 记忆宇宙">
+  <link rel="icon" href="/static/favicon.svg">
+  <link rel="stylesheet" href="/static/xiaoyu.css">
+  <title>小宇宇宙 · Ombre Brain</title>
+</head>
+<body>
+  <div class="auth-gate" id="auth-gate" aria-live="polite">
+    <section class="auth-card" aria-labelledby="auth-title">
+      <span class="auth-orbit" aria-hidden="true"></span>
+      <p class="eyebrow">OMBRE BRAIN · PRIVATE UNIVERSE</p>
+      <h1 id="auth-title">回到小宇宇宙</h1>
+      <p class="auth-copy" id="auth-copy">这里安静地保管着被认真记住的事。</p>
+      <form id="login-form" class="auth-form">
+        <label for="login-password">密码</label>
+        <input id="login-password" type="password" autocomplete="current-password" placeholder="输入密码">
+        <button type="submit">进入宇宙 <span>→</span></button>
+      </form>
+      <form id="setup-form" class="auth-form" hidden>
+        <label for="setup-password">设置一个新密码</label>
+        <input id="setup-password" type="password" autocomplete="new-password" placeholder="至少 6 位">
+        <label for="setup-password-again">再输入一次</label>
+        <input id="setup-password-again" type="password" autocomplete="new-password" placeholder="确认密码">
+        <button type="submit">建好入口 <span>→</span></button>
+      </form>
+      <p class="form-message" id="auth-message"></p>
+    </section>
+  </div>
+
+  <main class="universe-shell" id="universe-shell" hidden>
+    <aside class="side-rail">
+      <button class="brand" type="button" data-go="now" aria-label="回到此刻">
+        <span class="brand-orbit" aria-hidden="true"></span>
+        <span class="brand-words"><b>小宇</b><small>宇 宙</small></span>
+      </button>
+
+      <nav aria-label="主要导航">
+        <button class="nav-item active" type="button" data-view="now" aria-current="page">
+          <span class="nav-index">01</span><span class="nav-label">此刻</span>
+        </button>
+        <button class="nav-item" type="button" data-view="memories">
+          <span class="nav-index">02</span><span class="nav-label">记忆</span>
+        </button>
+        <button class="nav-item" type="button" data-view="letters">
+          <span class="nav-index">03</span><span class="nav-label">信件</span>
+        </button>
+        <button class="nav-item" type="button" data-view="settings">
+          <span class="nav-index">04</span><span class="nav-label">设置</span>
+        </button>
+      </nav>
+
+      <div class="rail-status">
+        <span class="status-dot" id="rail-status-dot"></span>
+        <div><b id="rail-status-title">正在连接</b><small id="rail-status-copy">— traces · now</small></div>
+      </div>
+    </aside>
+
+    <section class="main-panel">
+      <section class="view active" id="view-now" data-view-panel="now">
+        <header class="topbar">
+          <div>
+            <span class="eyebrow" id="today-kicker">—</span>
+            <h1 id="greeting">晚上好，小宇。</h1>
+          </div>
+          <div class="top-actions">
+            <button class="ghost-button" id="next-star" type="button">漂向下一颗星 <span>↗</span></button>
+            <button class="avatar" type="button" data-go="settings" aria-label="打开设置">宇</button>
+          </div>
+        </header>
+
+        <section class="hero-grid">
+          <article class="star-map" aria-label="记忆星空">
+            <header class="map-heading">
+              <div><span class="eyebrow">MEMORY CONSTELLATION</span><h2>有一颗记忆正在发光</h2></div>
+              <div class="legend"><span><i></i>记忆</span><span><i class="pink"></i>日记</span><span><i class="ring"></i>相关星</span></div>
+            </header>
+
+            <div class="constellation" id="constellation">
+              <div class="nebula nebula-one"></div><div class="nebula nebula-two"></div>
+              <svg class="star-lines" id="star-lines" viewBox="0 0 100 75" preserveAspectRatio="none" aria-hidden="true"></svg>
+              <div id="tiny-stars" aria-hidden="true"></div>
+              <div id="memory-stars"></div>
+              <button class="jellyfish" id="jellyfish" type="button" aria-label="唤醒小水母">
+                <span class="jelly-glow"></span>
+                <span class="jelly-cap"><i class="jelly-eye left"></i><i class="jelly-eye right"></i></span>
+                <span class="tentacle t1"></span><span class="tentacle t2"></span>
+                <span class="tentacle t3"></span><span class="tentacle t4"></span>
+                <em id="jelly-copy">在星海里打瞌睡</em>
+              </button>
+            </div>
+
+            <footer class="memory-focus" id="memory-focus">
+              <span class="focus-mark" id="focus-mark">✦</span>
+              <div class="focus-copy"><span id="focus-date">—</span><h3 id="focus-title">等待第一颗星亮起</h3><p id="focus-preview">记忆连上以后，会在这里轻轻发光。</p></div>
+              <button id="read-focus" type="button">阅读记忆 <span>→</span></button>
+            </footer>
+          </article>
+
+          <aside class="today-panel">
+            <div class="today-heading"><span class="eyebrow">TODAY</span><span class="today-date" id="day-number">—</span></div>
+            <p class="today-intro" id="today-intro">今天的宇宙很安静，适合慢慢想起一些温柔的事。</p>
+            <div class="stat-list">
+              <button type="button" data-go="memories"><span><i class="pink-glyph">✦</i>今日浮现</span><b id="stat-surfaced">00</b></button>
+              <button type="button" data-go="memories" data-memory-filter="diary"><span><i>◌</i>日记</span><b id="stat-diaries">00</b></button>
+              <button type="button" data-go="letters"><span><i>□</i>信件</span><b id="stat-letters">00</b></button>
+              <button type="button" data-go="memories" data-memory-filter="plan"><span><i>⌁</i>未完成约定</span><b id="stat-plans">00</b></button>
+            </div>
+            <blockquote><span>“</span><span id="today-quote">小鱼小鱼快快游，<br>四面八方是自由。</span><footer>— 一颗被好好留下的星</footer></blockquote>
+            <button class="write-button" type="button" data-go="letters"><span>＋</span>写一封信</button>
+          </aside>
+        </section>
+      </section>
+
+      <section class="view" id="view-memories" data-view-panel="memories" hidden>
+        <header class="page-heading">
+          <div><span class="eyebrow">MEMORY ARCHIVE</span><h1>所有被好好留下的事</h1><p>日记也住在这里。它们不是另一种记忆，只是日期写得更清楚一些。</p></div>
+          <div class="page-count"><strong id="memory-total">00</strong><span>TRACES</span></div>
+        </header>
+        <div class="memory-toolbar">
+          <div class="filter-pills" id="memory-filters" role="group" aria-label="筛选记忆">
+            <button class="active" type="button" data-filter="all">全部</button>
+            <button type="button" data-filter="diary">日记</button>
+            <button type="button" data-filter="plan">约定</button>
+            <button type="button" data-filter="pinned">钉选</button>
+            <button type="button" data-filter="feel">感受</button>
+            <button type="button" data-filter="archived">远处</button>
+          </div>
+          <label class="search-box"><span>⌕</span><input id="memory-search" type="search" placeholder="搜索一句话、一颗星……"></label>
+        </div>
+        <div class="memory-grid" id="memory-grid"><p class="empty-state">正在整理星光……</p></div>
+        <button class="load-more" id="memory-more" type="button" hidden>再看一些 <span>↓</span></button>
+      </section>
+
+      <section class="view" id="view-letters" data-view-panel="letters" hidden>
+        <header class="page-heading">
+          <div><span class="eyebrow">LETTERS BETWEEN US</span><h1>信会一次又一次抵达</h1><p>写下时是此刻，重读时就成了另一种相见。</p></div>
+          <div class="page-count"><strong id="letter-total">00</strong><span>LETTERS</span></div>
+        </header>
+        <div class="letters-layout">
+          <section class="letter-list-panel">
+            <div class="section-kicker"><span>所有来信</span><button id="refresh-letters" type="button">重新收信 ↻</button></div>
+            <div class="letter-list" id="letter-list"><p class="empty-state">信箱正在打开……</p></div>
+          </section>
+          <section class="compose-card">
+            <span class="eyebrow">WRITE A LETTER</span><h2>写给哥哥</h2>
+            <form id="letter-form">
+              <label>标题<input id="letter-title" maxlength="120" placeholder="今天想说的话"></label>
+              <div class="form-row"><label>日期<input id="letter-date" type="date"></label><label>打开方式<select id="letter-lock"><option value="none">立即可读</option><option value="timed">到那天再读</option><option value="permanent">永久封存</option></select></label></div>
+              <label id="unlock-row" hidden>解锁时间<input id="letter-unlock" type="datetime-local"></label>
+              <label>正文<textarea id="letter-content" rows="10" placeholder="哥哥：&#10;&#10;"></textarea></label>
+              <button class="primary-button" type="submit">把信放进宇宙 <span>→</span></button>
+              <p class="form-message" id="letter-message"></p>
+            </form>
+          </section>
+        </div>
+      </section>
+
+      <section class="view" id="view-settings" data-view-panel="settings" hidden>
+        <header class="page-heading">
+          <div><span class="eyebrow">SYSTEM & CONNECTIONS</span><h1>把工具安静地收在这里</h1><p>日常只看宇宙；需要连接、备份或维护时，再打开这一页。</p></div>
+          <button class="avatar logout-avatar" id="logout-button" type="button" title="退出登录">↗</button>
+        </header>
+        <div class="settings-grid">
+          <section class="settings-card mcp-card">
+            <span class="card-number">01</span><div><span class="eyebrow">MCP CONNECTION</span><h2>连接哥哥与 OB</h2><p id="mcp-summary">正在读取连接方式……</p></div>
+            <div class="connection-box"><code id="mcp-url">—</code><button id="copy-mcp" type="button">复制</button></div>
+            <div class="setting-meta"><span>鉴权方式</span><b id="mcp-auth-mode">—</b></div>
+            <a class="card-action" href="/legacy#settings">连接与模型的完整设置 <span>↗</span></a>
+          </section>
+          <section class="settings-card">
+            <span class="card-number">02</span><div><span class="eyebrow">MEMORY BACKUP</span><h2>备份与迁移</h2><p id="github-summary">正在检查 GitHub 备份……</p></div>
+            <div class="button-stack"><button id="github-sync" type="button">立即同步 GitHub <span>↑</span></button><a href="/api/export">导出一份完整记忆 <span>↓</span></a><a href="/legacy#import">导入与恢复 <span>↗</span></a></div>
+            <p class="inline-message" id="github-message"></p>
+          </section>
+          <section class="settings-card">
+            <span class="card-number">03</span><div><span class="eyebrow">SYSTEM STATUS</span><h2>系统与维护</h2><p>把复杂的控制面板留在门后，首页就不会再被它们打扰。</p></div>
+            <dl class="system-list"><div><dt>OB 版本</dt><dd id="system-version">—</dd></div><div><dt>记忆总数</dt><dd id="system-buckets">—</dd></div><div><dt>向量记忆</dt><dd id="system-embedding">—</dd></div><div><dt>引擎状态</dt><dd id="system-engine">—</dd></div></dl>
+            <div class="button-stack"><a href="/legacy#settings">高级设置 <span>↗</span></a><a href="/legacy#logs">运行日志 <span>↗</span></a><a href="/legacy">完整旧控制台 <span>↗</span></a></div>
+          </section>
+        </div>
+      </section>
+
+      <footer class="page-footer"><span>OMBRE BRAIN · PERSONAL CONSTELLATION</span><span>made gently for 小宇</span></footer>
+    </section>
+  </main>
+
+  <dialog class="detail-dialog" id="detail-dialog">
+    <button class="dialog-close" id="dialog-close" type="button" aria-label="关闭">×</button>
+    <span class="eyebrow" id="dialog-kicker">MEMORY</span>
+    <h2 id="dialog-title">—</h2><p class="dialog-meta" id="dialog-meta"></p>
+    <div class="dialog-body" id="dialog-body"></div>
+  </dialog>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="/static/xiaoyu.js" defer></script>
+</body>
+</html>

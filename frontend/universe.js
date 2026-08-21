@@ -242,6 +242,16 @@
     fetch('/auth/status', {cache:'no-store', credentials:'same-origin'})
       .then(function (response) { return response.ok ? response.json() : null; })
       .then(function (status) {
+        var legacyTarget = location.pathname === '/legacy'
+          ? location.hash.replace(/^#/, '')
+          : '';
+        var legacyTab = legacyTarget
+          ? document.querySelector('.tab[data-tab="' + legacyTarget.replace(/[^a-z0-9-]/g, '') + '"]')
+          : null;
+        if (status && status.authenticated && legacyTab) {
+          legacyTab.click();
+          return null;
+        }
         var home = document.querySelector('.tab[data-tab="home"]');
         if (status && status.authenticated && home && home.classList.contains('active')) {
           return window.loadUniverseHome();

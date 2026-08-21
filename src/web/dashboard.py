@@ -20,47 +20,57 @@ from . import _shared as sh
 
 def register(mcp) -> None:
 
-    @mcp.custom_route("/", methods=["GET"])
-    async def root_dashboard(request: Request) -> Response:
-        """Serve dashboard HTML directly at root.
-
-        历史上 / 会 307 → /dashboard，但叠加 Cloudflare Tunnel 的 Always Use HTTPS /
-        Page Rule 时容易触发 ERR_TOO_MANY_REDIRECTS。直接返回 HTML，少一次跳转，
-        既能修复回环，也省一个 RTT。
-        """
+    def _serve_frontend(name: str, *, cache_bust: tuple[str, ...] = ()) -> Response:
+        """Read a bundled frontend document with consistent no-cache headers."""
         from starlette.responses import HTMLResponse
-        dashboard_path = os.path.join(sh.repo_root, "frontend", "dashboard.html")
+
+        page_path = os.path.join(sh.repo_root, "frontend", name)
         try:
-            with open(dashboard_path, "r", encoding="utf-8") as f:
+            with open(page_path, "r", encoding="utf-8") as f:
                 html = f.read()
-            # Cache-bust versioned visual assets so dashboard upgrades are visible
-            # without a manual hard refresh. 只替换已知静态资源的字面量 URL。
-            for asset in (
-                "/static/icon.svg",
-                "/static/favicon.svg",
-                "/static/universe.css",
-                "/static/universe.js",
-            ):
+            for asset in cache_bust:
                 html = html.replace(asset, f"{asset}?v={sh.version}")
-            # 别让浏览器缓存仪表板 HTML：否则改了 dashboard.html 重新下发后，
-            # 用户看到的还是旧版面（U-09 只 cache-bust 了 SVG，HTML 本身没设）。
-            # HTML 很小、又是每次从磁盘读，禁缓存代价可忽略，省掉「为什么改了没生效」。
             return HTMLResponse(
                 html,
                 headers={"Cache-Control": "no-cache, no-store, must-revalidate"},
             )
         except FileNotFoundError:
-            # 走到这里 = 部署目录里缺 frontend/dashboard.html。它本应随仓库一起下发
-            # （已纳入 git，未被 .gitignore 排除），最常见原因是克隆/部署了旧版本。
             return HTMLResponse(
-                "<h1>dashboard.html not found</h1>"
-                "<p>The packaged frontend asset is missing.</p>"
-                "<p>This file ships with the repo (it is committed and NOT git-ignored). "
-                "A missing file almost always means an outdated checkout — "
-                "run <code>git pull origin main</code> / re-clone, or rebuild your Docker image, "
-                "then restart.</p>",
+                f"<h1>{name} not found</h1>"
+                "<p>The packaged frontend asset is missing. Update the deployment "
+                "and restart Ombre Brain.</p>",
                 status_code=404,
             )
+
+    @mcp.custom_route("/", methods=["GET"])
+    async def root_dashboard(request: Request) -> Response:
+        """Serve the focused Xiaoyu UI directly at root.
+
+        历史上 / 会 307 → /dashboard，但叠加 Cloudflare Tunnel 的 Always Use HTTPS /
+        Page Rule 时容易触发 ERR_TOO_MANY_REDIRECTS。直接返回 HTML，少一次跳转，
+        既能修复回环，也省一个 RTT。
+        """
+        return _serve_frontend(
+            "xiaoyu.html",
+            cache_bust=(
+                "/static/favicon.svg",
+                "/static/xiaoyu.css",
+                "/static/xiaoyu.js",
+            ),
+        )
+
+    @mcp.custom_route("/legacy", methods=["GET"])
+    async def legacy_dashboard(request: Request) -> Response:
+        """Keep the complete technical dashboard behind Settings → Advanced."""
+        return _serve_frontend(
+            "dashboard.html",
+            cache_bust=(
+                "/static/icon.svg",
+                "/static/favicon.svg",
+                "/static/universe.css",
+                "/static/universe.js",
+            ),
+        )
 
     # iter 1.7 §C/§H: serve frontend static assets (icon.svg, favicon.svg, manifest.json)
     # 安全要点：必须白名单过滤文件名，绝不能让 request 直接拼路径，
@@ -76,6 +86,8 @@ def register(mcp) -> None:
             "RRPL.ttf": "font/truetype",
             "universe.css": "text/css",
             "universe.js": "text/javascript",
+            "xiaoyu.css": "text/css",
+            "xiaoyu.js": "text/javascript",
         }
         if name not in allowed:
             return JSONResponse({"error": "not found"}, status_code=404)
