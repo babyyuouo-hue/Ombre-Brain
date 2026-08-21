@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="referrer" content="no-referrer">
 <title>Ombre Brain</title>
-<meta name="theme-color" content="#B85C3C">
+<meta name="theme-color" content="#17171A">
 <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
 <link rel="apple-touch-icon" href="/static/icon.svg">
 <link rel="manifest" href="/static/manifest.json">
@@ -1939,6 +1939,7 @@
     .tab-spacer { display: none; }
   }
 </style>
+<link rel="stylesheet" href="/static/universe.css">
 </head>
 <body>
 
@@ -1967,7 +1968,7 @@
 <div class="header">
   <h1>
     <img class="ob-logo" src="/static/icon.svg" alt="OB" />
-    Ombre Brain<span class="version-badge" id="version-badge"></span>
+    <span id="universe-greeting">晚上好，小宇。</span><span class="version-badge" id="version-badge"></span>
   </h1>
   <div class="header-meta">
     <!-- 记忆归属徽标：多人共用一套 OB 时（owner_count>=2）显示「这份记忆是谁的」，单人隐藏。
@@ -1998,16 +1999,21 @@
 </div>
 
 <div class="tabs">
-  <div class="tab active" data-tab="list"><span>记忆桶</span><span class="tab-en">Buckets</span></div>
-  <div class="tab" data-tab="breath"><span>Breath 模拟</span><span class="tab-en">Breath Trace</span></div>
-  <div class="tab" data-tab="network"><span>记忆网络</span><span class="tab-en">Network</span></div>
-  <div class="tab" data-tab="plan"><span>计划</span><span class="tab-en">Plans</span></div>
-  <div class="tab" data-tab="letters"><span>信</span><span class="tab-en">Letters</span></div>
-  <div class="tab" data-tab="anchors"><span>锚点</span><span class="tab-en">Anchors</span></div>
-  <div class="tab" data-tab="import"><span>导入</span><span class="tab-en">Import</span></div>
-  <div class="tab" data-tab="faq"><span>帮助</span><span class="tab-en">FAQ</span></div>
-  <div class="tab" data-tab="logs"><span>日志</span><span class="tab-en">Logs</span></div>
-  <div class="tab" data-tab="settings"><span>设置</span><span class="tab-en">Settings</span></div>
+  <div class="universe-brand" aria-label="小宇宇宙">
+    <span class="universe-brand-orbit" aria-hidden="true"></span>
+    <span class="universe-brand-copy"><b>小宇</b><small>宇宙</small></span>
+  </div>
+  <div class="tab active" data-tab="home" data-index="01"><span>此刻</span><span class="tab-en">Now</span></div>
+  <div class="tab" data-tab="list" data-index="02"><span>记忆</span><span class="tab-en">Memories</span></div>
+  <div class="tab" data-tab="network" data-index="03"><span>星空</span><span class="tab-en">Constellation</span></div>
+  <div class="tab" data-tab="breath" data-index="04"><span>呼吸</span><span class="tab-en">Breath</span></div>
+  <div class="tab" data-tab="letters" data-index="05"><span>信件</span><span class="tab-en">Letters</span></div>
+  <div class="tab" data-tab="plan" data-index="06"><span>约定</span><span class="tab-en">Promises</span></div>
+  <div class="tab" data-tab="anchors" data-index="07"><span>锚点</span><span class="tab-en">Anchors</span></div>
+  <div class="tab" data-tab="settings" data-index="08"><span>设置</span><span class="tab-en">Settings</span></div>
+  <div class="tab" data-tab="import" data-index="09"><span>导入</span><span class="tab-en">Import</span></div>
+  <div class="tab" data-tab="logs" data-index="10"><span>日志</span><span class="tab-en">Logs</span></div>
+  <div class="tab" data-tab="faq" data-index="11"><span>帮助</span><span class="tab-en">FAQ</span></div>
   <!-- v3-debug tab 暂时隐藏：后端 /api/v3/debug/* 路由已就位（只读、不写数据），
        但 v3_runtime 尚未接入（src/ombrebrain/ 架构核心未挂载到 server.py），
        现在打开只会看到空列表，不报错但没数据。
@@ -2015,7 +2021,7 @@
   <div class="tab" data-tab="v3-debug"><span>2.4.0 Debug</span><span class="tab-en">Replay</span></div>
   -->
   <div class="tab-spacer"></div>
-  <div class="tab" data-tab="about"><span>关于</span><span class="tab-en">About</span></div>
+  <div class="tab" data-tab="about" data-index="12"><span>关于</span><span class="tab-en">About</span></div>
 </div>
 
 <!-- embed-warn-banner: 向量化未配置时始终可见，配置后自动消失 -->
@@ -2037,7 +2043,71 @@
   <div class="sb-body" id="sb-body"></div>
 </div>
 
-<div class="content" id="list-view">
+<div class="content" id="home-view">
+  <div class="universe-home-grid">
+    <article class="universe-star-card" aria-label="真实记忆星空">
+      <div class="universe-card-head">
+        <div>
+          <span class="universe-eyebrow">MEMORY CONSTELLATION</span>
+          <h2>有一颗记忆正在发光</h2>
+        </div>
+        <div class="universe-legend" aria-label="图例">
+          <span><i></i>记忆</span>
+          <span><i class="letter"></i>信件</span>
+          <span><i class="promise"></i>约定</span>
+        </div>
+      </div>
+      <div class="universe-constellation">
+        <svg class="universe-lines" viewBox="0 0 100 75" preserveAspectRatio="none" aria-hidden="true">
+          <path d="M18 22 L43 16 L72 27 L84 52 L61 61 L29 57 L18 22"></path>
+          <path d="M43 16 L61 61 M72 27 L29 57 M29 57 L47 76 L77 78"></path>
+        </svg>
+        <div id="universe-dust-layer" aria-hidden="true"></div>
+        <div id="universe-stars"></div>
+        <button class="universe-jelly" id="universe-jelly" onclick="toggleUniverseJelly()" aria-label="唤醒小水母">
+          <span class="universe-jelly-cap"></span>
+          <span class="universe-tentacle t1"></span><span class="universe-tentacle t2"></span>
+          <span class="universe-tentacle t3"></span><span class="universe-tentacle t4"></span>
+          <em>在星海里打瞌睡</em>
+        </button>
+      </div>
+      <div class="universe-focus" aria-live="polite">
+        <div class="universe-focus-mark" aria-hidden="true">✦</div>
+        <div class="universe-focus-copy">
+          <span id="universe-focus-date">MEMORY CONSTELLATION</span>
+          <h3 id="universe-focus-title">正在寻找发光的记忆</h3>
+          <p id="universe-focus-copy">星图会在登录后连接到 Ombre Brain。</p>
+        </div>
+        <button id="universe-focus-open" onclick="openUniverseMemory()">阅读记忆 →</button>
+      </div>
+    </article>
+
+    <aside class="universe-today">
+      <div class="universe-today-head">
+        <span class="universe-eyebrow" id="universe-date-line">TODAY</span>
+        <span class="universe-day-number" id="universe-day-number">--</span>
+      </div>
+      <p class="universe-today-intro">今天的宇宙很安静，适合慢慢想起一些温柔的事。</p>
+      <div class="universe-stat-list">
+        <button onclick="universeGo('list')"><span><i class="pink">✦</i>全部记忆</span><b id="universe-memory-count">--</b></button>
+        <button onclick="universeGo('list')"><span><i>⌖</i>钉选</span><b id="universe-pin-count">--</b></button>
+        <button onclick="universeGo('letters')"><span><i>□</i>信件</span><b id="universe-letter-count">--</b></button>
+        <button onclick="universeGo('plan')"><span><i>⌁</i>未完成约定</span><b id="universe-plan-count">--</b></button>
+      </div>
+      <blockquote>
+        小鱼小鱼快快游，<br>四面八方是自由。
+        <footer>— 一颗被好好留下的星</footer>
+      </blockquote>
+      <button class="universe-primary" onclick="universeGo('letters')">＋ 写下一封信</button>
+    </aside>
+  </div>
+  <div class="universe-home-footer">
+    <span>OMBRE BRAIN · PERSONAL CONSTELLATION</span>
+    <span class="pink">made gently for 小宇</span>
+  </div>
+</div>
+
+<div class="content" id="list-view" style="display:none">
   <div class="filters" id="filters"></div>
   <div class="bucket-viewbar">
     <label class="bucket-sort-control" for="bucket-sort">
@@ -4681,6 +4751,7 @@ function activateDashboardTab(tab) {
     tab.classList.add('active');
     const target = tab.dataset.tab;
     const pending = [];
+    document.getElementById('home-view').style.display = target === 'home' ? '' : 'none';
     document.getElementById('list-view').style.display = target === 'list' ? '' : 'none';
     document.getElementById('breath-view').style.display = target === 'breath' ? '' : 'none';
     document.getElementById('network-view').style.display = target === 'network' ? '' : 'none';
@@ -4694,6 +4765,7 @@ function activateDashboardTab(tab) {
     document.getElementById('anchors-view').style.display = target === 'anchors' ? '' : 'none';
     document.getElementById('about-view').style.display = target === 'about' ? '' : 'none';
     if (target !== 'network' && _netRAF) { cancelAnimationFrame(_netRAF); _netRAF = null; }
+    if (target === 'home' && typeof loadUniverseHome === 'function') pending.push(loadUniverseHome());
     if (target === 'network') pending.push(loadNetwork());
     if (target === 'plan') pending.push(loadPlans());
     if (target === 'list') pending.push(loadBuckets());
@@ -10027,6 +10099,8 @@ async function initSelfFab() {
   } catch (_) {}
 }
 </script>
+
+<script src="/static/universe.js"></script>
 
 </body>
 </html>

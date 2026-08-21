@@ -33,9 +33,14 @@ def register(mcp) -> None:
         try:
             with open(dashboard_path, "r", encoding="utf-8") as f:
                 html = f.read()
-            # U-09 fix: cache-bust static SVG assets so logo updates are visible
-            # without manual hard-refresh after upgrade. 只动字面量 /static/*.svg URL。
-            for asset in ("/static/icon.svg", "/static/favicon.svg"):
+            # Cache-bust versioned visual assets so dashboard upgrades are visible
+            # without a manual hard refresh. 只替换已知静态资源的字面量 URL。
+            for asset in (
+                "/static/icon.svg",
+                "/static/favicon.svg",
+                "/static/universe.css",
+                "/static/universe.js",
+            ):
                 html = html.replace(asset, f"{asset}?v={sh.version}")
             # 别让浏览器缓存仪表板 HTML：否则改了 dashboard.html 重新下发后，
             # 用户看到的还是旧版面（U-09 只 cache-bust 了 SVG，HTML 本身没设）。
@@ -69,6 +74,8 @@ def register(mcp) -> None:
             "favicon.svg": "image/svg+xml",
             "manifest.json": "application/manifest+json",
             "RRPL.ttf": "font/truetype",
+            "universe.css": "text/css",
+            "universe.js": "text/javascript",
         }
         if name not in allowed:
             return JSONResponse({"error": "not found"}, status_code=404)
