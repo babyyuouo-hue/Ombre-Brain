@@ -8,6 +8,7 @@ import pytest
 import tools._runtime as rt
 from tools._common import restore_archived_letters
 from tools.plan.core import letter_read
+from ombrebrain.storage.source_store import SourceStore
 from web import letters as letters_web
 
 
@@ -176,6 +177,40 @@ async def test_letter_read_returns_prompt_like_text_verbatim_without_markers(buc
     assert "[instructions:false]" not in result
     assert "[may_call_tools:false]" not in result
     assert "payload_sha256" not in result
+
+
+@pytest.mark.asyncio
+async def test_public_letter_tag_returns_opted_in_source_instead_of_summary(bucket_mgr):
+    source_store = SourceStore(bucket_mgr.base_dir)
+    source = "第一行原文。\n小宇说：[[哥哥]]是世界的男主角。\n第三行原文。\n"
+    source_ref = source_store.put(source)
+    bucket_id = await bucket_mgr.create(
+        content="这是压缩后的摘要索引，不是原话。",
+        tags=["letter"],
+        domain=["陪伴"],
+        source_refs=[{"ref": source_ref, "ranges": [[2, 2]]}],
+    )
+    install_letter_runtime(bucket_mgr)
+    rt.source_store = source_store
+
+    result = await letter_read(query="摘要索引", limit=10)
+
+    assert bucket_id in result
+    assert "小宇说：[[哥哥]]是世界的男主角。" in result
+    assert "压缩后的摘要索引" not in result
+    assert "第一行原文" not in result
+    assert "第三行原文" not in result
+
+
+@pytest.mark.asyncio
+async def test_public_letter_tag_without_source_keeps_full_bucket_body(bucket_mgr):
+    content = "这本来就是逐字保存的完整内容。"
+    await bucket_mgr.create(content=content, tags=["LETTER"], domain=["陪伴"])
+    install_letter_runtime(bucket_mgr)
+
+    result = await letter_read(limit=10)
+
+    assert content in result
 
 
 @pytest.mark.asyncio
