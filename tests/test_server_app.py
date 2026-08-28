@@ -38,6 +38,7 @@ EXPECTED_PUBLIC_MCP_TOOLS = (
     "release",
     "pulse",
     "plan",
+    "letter_read",
     "feel",
     "I",
 )
@@ -187,8 +188,8 @@ async def test_json_accept_shim_preserves_explicit_or_non_mcp_accept(path, accep
 
 
 @pytest.mark.asyncio
-async def test_letter_tools_live_on_the_extra_connector_only():
-    """信件三工具只在 /mcp-extra，主连接器一个都不该有。
+async def test_letter_tools_live_on_extra_with_read_compatibility():
+    """信件三工具在 /mcp-extra，同时主连接器保留只读兼容入口。
 
     分开不是为了好看：工具数量本身会伤害可用性——claude.ai 在工具过多时
     改用 tool_search 延迟加载，按描述搜工具、命中带随机性。信是低频且语义
@@ -200,7 +201,8 @@ async def test_letter_tools_live_on_the_extra_connector_only():
     extra_names = [tool.name for tool in await server.mcp_extra.list_tools()]
 
     assert extra_names == list(EXPECTED_EXTRA_MCP_TOOLS)
-    assert main_names.isdisjoint(EXPECTED_EXTRA_MCP_TOOLS)
+    assert main_names.intersection(EXPECTED_EXTRA_MCP_TOOLS) == {"letter_read"}
+    assert main_names.isdisjoint({"letter_write", "letter_lock_update"})
     assert server.mcp_extra.settings.streamable_http_path == "/mcp-extra"
     # 两个连接器的传输设置必须一致，否则同一个客户端连两条路会有两种行为
     assert server.mcp_extra.settings.json_response is True
