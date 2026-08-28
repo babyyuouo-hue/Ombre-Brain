@@ -180,14 +180,13 @@ async def test_letter_read_returns_prompt_like_text_verbatim_without_markers(buc
 
 
 @pytest.mark.asyncio
-async def test_public_letter_tag_returns_opted_in_source_instead_of_summary(bucket_mgr):
+async def test_public_letter_domain_returns_opted_in_source_instead_of_summary(bucket_mgr):
     source_store = SourceStore(bucket_mgr.base_dir)
     source = "第一行原文。\n小宇说：[[哥哥]]是世界的男主角。\n第三行原文。\n"
     source_ref = source_store.put(source)
     bucket_id = await bucket_mgr.create(
         content="这是压缩后的摘要索引，不是原话。",
-        tags=["letter"],
-        domain=["陪伴"],
+        domain=["letter"],
         source_refs=[{"ref": source_ref, "ranges": [[2, 2]]}],
     )
     install_letter_runtime(bucket_mgr)

@@ -370,7 +370,7 @@ if text_match or semantic_match: 入选
 
 **3.0.0 删除了 `source_read` / `source_attach` / `source_detach` / `source_restore` 四个工具。**
 原文证据层没有通用读取入口，模型无法任意回读原文，也无法后补或停用绑定。
-唯一的窄口由所有者逐桶显式开启：给桶添加公开标签 `letter` 后，
+唯一的窄口由所有者逐桶显式开启：在桶的 `tags` 或 `domain` 中添加 `letter` 后，
 `letter_read` / Letter 页面读取该桶时，返回活动 `source_refs` 声明的逐字范围，
 不拿压缩摘要冒充原文；移除标签即关闭。内部标签 `__letter__` 仍只标识原生
 Letter，不能把普通记忆的隐藏证据暴露出来。
