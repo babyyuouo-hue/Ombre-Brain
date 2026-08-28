@@ -35,6 +35,7 @@ EXPECTED_TOOLS = {
     "release",
     "pulse",
     "plan",
+    "letter_read",
     "feel",
     "I",
     "dream",
@@ -51,6 +52,7 @@ EXPECTED_TOOL_ORDER = (
     "release",
     "pulse",
     "plan",
+    "letter_read",
     "feel",
     "I",
 )
@@ -127,6 +129,7 @@ EXPECTED_TOOL_PROPERTIES = {
     "release": {"bucket_id"},
     "pulse": {"include_archive"},
     "plan": {"content", "status", "related_bucket", "weight", "why_remembered"},
+    "letter_read": {"query", "limit", "author", "date_from", "date_to"},
     "feel": {"query", "max_tokens"},
     "I": {"content", "aspect", "read", "limit", "promote"},
     "dream": {"window_hours"},
@@ -289,7 +292,7 @@ def test_extra_connector_exposes_only_letters(mcp_extra_client):
     tools = mcp_extra_client.list_tools()
     names = {tool["name"] for tool in tools}
     assert names == EXPECTED_EXTRA_TOOLS
-    assert names.isdisjoint(EXPECTED_TOOLS)
+    assert names.intersection(EXPECTED_TOOLS) == {"letter_read"}
 
     by_name = {tool["name"]: tool for tool in tools}
     for name, expected_properties in EXPECTED_EXTRA_TOOL_PROPERTIES.items():
