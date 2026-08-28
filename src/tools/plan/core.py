@@ -134,10 +134,8 @@ def is_letter_bucket(bucket: dict) -> bool:
     tags = meta.get("tags") or []
     if isinstance(tags, str):
         tags = [part.strip() for part in tags.split(",")]
-    if isinstance(tags, (list, tuple, set)):
-        normalized_tags = {str(tag).strip().casefold() for tag in tags}
-        if normalized_tags.intersection({"__letter__", "letter"}):
-            return True
+    if isinstance(tags, (list, tuple, set)) and "__letter__" in tags:
+        return True
     return (
         str(meta.get("locked_by") or "").strip() in {"human", "ai"}
         and str(meta.get("lock_type") or "").strip().casefold()
@@ -145,15 +143,26 @@ def is_letter_bucket(bucket: dict) -> bool:
     )
 
 
-def _has_public_letter_tag(bucket: dict) -> bool:
+def _has_public_letter_label(bucket: dict) -> bool:
     """Whether the owner explicitly opted a memory into verbatim Letter reading."""
     meta = bucket.get("metadata") or {}
     tags = meta.get("tags") or []
     if isinstance(tags, str):
         tags = [part.strip() for part in tags.split(",")]
-    return isinstance(tags, (list, tuple, set)) and any(
-        str(tag).strip().casefold() == "letter" for tag in tags
-    )
+    domains = meta.get("domain") or []
+    if isinstance(domains, str):
+        domains = [part.strip() for part in domains.split(",")]
+    values = []
+    if isinstance(tags, (list, tuple, set)):
+        values.extend(tags)
+    if isinstance(domains, (list, tuple, set)):
+        values.extend(domains)
+    return any(str(value).strip().casefold() == "letter" for value in values)
+
+
+def is_readable_letter_bucket(bucket: dict) -> bool:
+    """Letter read surfaces include native Letters plus explicitly labelled memories."""
+    return is_letter_bucket(bucket) or _has_public_letter_label(bucket)
 
 
 def readable_letter_content(bucket: dict) -> str:
@@ -165,7 +174,7 @@ def readable_letter_content(bucket: dict) -> str:
     only its active source ranges through Letter readers.
     """
     stored_content = str(bucket.get("content") or "")
-    if not _has_public_letter_tag(bucket):
+    if not _has_public_letter_label(bucket):
         return strip_wikilinks(stored_content)
 
     meta = bucket.get("metadata") or {}
@@ -591,7 +600,7 @@ async def letter_read(
         return f"读取信件失败: {safe_error_detail(e)}"
     normalized_letters = []
     states = {}
-    for bucket in (b for b in all_b if is_letter_bucket(b)):
+    for bucket in (b for b in all_b if is_readable_letter_bucket(b)):
         state = letter_lock_state(bucket, "ai")
         bucket, state = await normalize_expired_lock(bucket, state, "ai")
         if not bucket:
