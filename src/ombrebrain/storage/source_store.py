@@ -2,7 +2,8 @@
 
 原文按 UTF-8 内容哈希写入 ``<vault>/_sources/src_<sha256>.source``。
 文件不参与普通 Markdown 扫描、浮现或语义索引；从 2.10.1 起会随完整
-本地/GitHub 备份迁移。只有 source_read 在精确匹配桶 ID 与标题后才会读取。
+本地/GitHub 备份迁移。默认没有通用读取入口；只有所有者把具体桶显式标为
+公开 ``letter`` 标签后，Letter 读取面才会读取该桶的活动原文范围。
 """
 
 from __future__ import annotations
