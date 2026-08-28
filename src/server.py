@@ -1065,6 +1065,7 @@ async def letter_lock_update(
     )
 
 
+@mcp.tool()
 @mcp_extra.tool()
 async def letter_read(
     query: Optional[str] = "",
@@ -1151,9 +1152,11 @@ for _strict_tool_name, _strict_server in (
     ("release", mcp),
     ("pulse", mcp),
     ("plan", mcp),
-    # 信件在 /mcp-extra，严格校验跟着工具走。
+    # 信件写入与锁管理只在 /mcp-extra；letter_read 同时保留在主连接器，
+    # 兼容已缓存旧工具清单、仍把只读调用发往 /mcp 的客户端。
     ("letter_write", mcp_extra),
     ("letter_lock_update", mcp_extra),
+    ("letter_read", mcp),
     ("letter_read", mcp_extra),
     ("feel", mcp),
     ("I", mcp),
@@ -1266,7 +1269,7 @@ if __name__ == "__main__":
             mcp_extra=mcp_extra,
         )
         if transport == "streamable-http":
-            logger.info("MCP /mcp：13 个记忆工具；/mcp-extra：3 个信件工具")
+            logger.info("MCP /mcp：13 个记忆工具 + letter_read 兼容入口；/mcp-extra：3 个信件工具")
         logger.info("CORS middleware enabled for remote transport / 已启用 CORS 中间件")
         logger.info(
             "MCP request body limit: %s",
