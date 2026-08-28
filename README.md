@@ -89,7 +89,7 @@ Dashboard 原有的 Letter 编辑继续保留：历史信、无锁信以及当�
 
 ### 原文证据边界
 
-- **原文证据默认只写不读。** v3.0.0 起删除了通用 `source_read` / `source_attach` / `source_detach` / `source_restore`：模型无法任意回读原文，也无法后补或停用绑定。唯一窄口是所有者显式把某个桶标记为公开标签 `letter` 后，`letter_read` 才会返回该桶活动 `source_refs` 指向的逐字范围；移除标签即关闭这个入口。系统内部的 `__letter__` 仍只表示原生 Letter，不会扩大普通记忆的原文读取范围。
+- **原文证据默认只写不读。** v3.0.0 起删除了通用 `source_read` / `source_attach` / `source_detach` / `source_restore`：模型无法任意回读原文，也无法后补或停用绑定。唯一窄口是所有者显式在某个桶的 `tags` 或 `domain` 中标记 `letter` 后，`letter_read` 才会返回该桶活动 `source_refs` 指向的逐字范围；移除标签即关闭这个入口。系统内部的 `__letter__` 仍只表示原生 Letter，不会扩大普通记忆的原文读取范围。
 - 写入仍照旧：`hold(source_content=...)` 或结构化 `grow(content=共享原文, items=[...])` 建立原文证据，每个对象条目用 `source_ranges=[[起始行, 结束行], ...]` 声明自己的 1-based 闭区间。原文按 SHA-256 内容寻址存进 `_sources/`，进备份、进 GitHub 同步。
 - 保留原文是为了**备份与导出的完整性**，不是为了让模型回忆。原文永不参与 `breath`、被动联想、语义索引或衰减计分；日常浮现里不会出现任何「这条背后还有原文」的提示。
 - 显式标题会规范为单行，最长 120 字符，越界直接拒绝而不静默截断。证据文件按 SHA-256 校验完整性；哈希与备份清单不是数字签名，不能证明备份来源。
