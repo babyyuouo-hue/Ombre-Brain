@@ -35,6 +35,10 @@ from .._common import (
     check_metadata_size,
     check_query_size,
 )
+from ombrebrain.storage.source_store import (
+    active_source_refs_from_links,
+    source_links_from_metadata,
+)
 from utils import strip_wikilinks, get_ai_name, get_owner_name, get_tzinfo, get_timezone_name
 from errors import safe_error_detail
 
@@ -130,13 +134,69 @@ def is_letter_bucket(bucket: dict) -> bool:
     tags = meta.get("tags") or []
     if isinstance(tags, str):
         tags = [part.strip() for part in tags.split(",")]
-    if isinstance(tags, (list, tuple, set)) and "__letter__" in tags:
-        return True
+    if isinstance(tags, (list, tuple, set)):
+        normalized_tags = {str(tag).strip().casefold() for tag in tags}
+        if normalized_tags.intersection({"__letter__", "letter"}):
+            return True
     return (
         str(meta.get("locked_by") or "").strip() in {"human", "ai"}
         and str(meta.get("lock_type") or "").strip().casefold()
         in {"timed", "permanent"}
     )
+
+
+def _has_public_letter_tag(bucket: dict) -> bool:
+    """Whether the owner explicitly opted a memory into verbatim Letter reading."""
+    meta = bucket.get("metadata") or {}
+    tags = meta.get("tags") or []
+    if isinstance(tags, str):
+        tags = [part.strip() for part in tags.split(",")]
+    return isinstance(tags, (list, tuple, set)) and any(
+        str(tag).strip().casefold() == "letter" for tag in tags
+    )
+
+
+def readable_letter_content(bucket: dict) -> str:
+    """Return the exact opted-in source text, otherwise the stored Letter body.
+
+    Normal Letters already store their full body.  A long memory can instead
+    contain a compressed index plus immutable ``source_refs``.  Giving that
+    bucket the public ``letter`` tag is the owner's explicit opt-in to expose
+    only its active source ranges through Letter readers.
+    """
+    stored_content = str(bucket.get("content") or "")
+    if not _has_public_letter_tag(bucket):
+        return strip_wikilinks(stored_content)
+
+    meta = bucket.get("metadata") or {}
+    try:
+        refs = active_source_refs_from_links(source_links_from_metadata(meta))
+    except ValueError as exc:
+        rt.logger.warning(
+            "public letter source metadata invalid for %s: %s",
+            bucket.get("id", ""),
+            safe_error_detail(exc),
+        )
+        return "[这封 Letter 的原文引用无效，未返回摘要替代原文。]"
+    if not refs:
+        return strip_wikilinks(stored_content)
+
+    store = getattr(rt, "source_store", None)
+    if store is None:
+        return "[这封 Letter 的原文存储暂不可用，未返回摘要替代原文。]"
+    try:
+        chunks = [
+            store.select_ranges(store.read(item["ref"]), item["ranges"])
+            for item in refs
+        ]
+    except (OSError, UnicodeError, ValueError) as exc:
+        rt.logger.warning(
+            "public letter source read failed for %s: %s",
+            bucket.get("id", ""),
+            safe_error_detail(exc),
+        )
+        return "[这封 Letter 的原文读取失败，未返回摘要替代原文。]"
+    return "\n\n".join(chunk.rstrip("\n") for chunk in chunks if chunk).strip()
 
 
 def letter_lock_revision(bucket: dict) -> tuple[str, str, str]:
@@ -232,7 +292,7 @@ def safe_letter_metadata(bucket: dict, caller_side: str | None) -> dict:
     }
     if not state["locked"]:
         payload["title"] = meta.get("title", "") or meta.get("name", "")
-        payload["content"] = strip_wikilinks(bucket.get("content", ""))
+        payload["content"] = readable_letter_content(bucket)
     return payload
 
 
@@ -642,7 +702,7 @@ async def letter_read(
         title = m.get("title") or m.get("name", "")
         payload = (
             f"[{b['id']}] {a} · {d}{(' · ' + title) if title else ''}\n"
-            + strip_wikilinks(b["content"])
+            + readable_letter_content(b)
         )
         parts.append(payload)
     return "=== 信件 ===\n" + "\n\n---\n\n".join(parts)
