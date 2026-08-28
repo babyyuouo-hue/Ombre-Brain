@@ -1074,7 +1074,7 @@ async def letter_read(
     date_from: Optional[str] = "",
     date_to: Optional[str] = "",
 ) -> str:
-    """检索历史信件。query=语义检索(可选);author 按署名过滤(\"user\"=用户侧,\"ai\"=AI 侧,也可传具体署名字符串);date_from/date_to=ISO 日期范围(可选)。无 query 时按时间倒序返回最近 limit 封。返回完整原文,不压缩。"""
+    """检索历史信件。query=语义检索(可选);author 按署名过滤(\"user\"=用户侧,\"ai\"=AI 侧,也可传具体署名字符串);date_from/date_to=ISO 日期范围(可选)。无 query 时按时间倒序返回最近 limit 封。返回完整原文,不压缩；普通记忆由所有者在 tags 或 domain 中显式标为 letter 后，也可从其活动原文引用逐字读取。"""
     return await _with_notice(
         _t_plan.letter_read(
             query=query, limit=limit, author=author,
